@@ -1,0 +1,19 @@
+{% extends "cabinet/base.html" %}
+
+{% block content %}
+  <h1>Личный кабинет сотрудника</h1>
+  <p class="muted">Табельный номер: {{ tab_number }}</p>
+
+  {% if employee %}
+    <div class="card">
+      <p><strong>Ф.И.О.:</strong> {{ employee.fio }}</p>
+      <p><strong>Должность:</strong> {{ employee.position }}</p>
+      <p><strong>Грейд:</strong> {{ employee.grade }}</p>
+      <p><strong>ФОТ:</strong> {{ employee.fot }}</p>
+      <p><strong>ФОТ по рынку:</strong> {{ employee.fot_market }}</p>
+      <p><strong>Проплаченность:</strong> {{ employee.paid_ratio }}</p>
+    </div>
+  {% else %}
+    <p>Данные сотрудника не найдены. Проверьте табельный номер.</p>
+  {% endif %}
+{% endblock %}

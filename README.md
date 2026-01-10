@@ -48,3 +48,15 @@ uv run python src/main.py --data-dir data --output-dir output --limit 10000000
 ```
 
 `--limit` — бюджет на повышение (по умолчанию 10 млн).
+
+## Веб-кабинет (Django)
+
+```bash
+uv sync
+uv run python web/manage.py migrate
+uv run python web/manage.py createsuperuser
+uv run python web/manage.py runserver
+```
+
+После входа в админку создайте группы `employee` и `budgetologist`,
+а пользователей добавьте в нужную группу. Для сотрудника логин — это табельный номер.

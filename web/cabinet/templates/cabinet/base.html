@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>Кабинет</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 32px; color: #222; }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+      nav a { margin-right: 12px; text-decoration: none; color: #1a4a8a; }
+      table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background: #f4f4f4; }
+      .card { border: 1px solid #ddd; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
+      .muted { color: #666; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <strong>Веб-кабинет</strong>
+      </div>
+      {% if user.is_authenticated %}
+      <nav>
+        <a href="{% url 'cabinet:employee' %}">Сотрудник</a>
+        <a href="{% url 'cabinet:budget' %}">Бюджетолог</a>
+        <a href="{% url 'cabinet:logout' %}">Выйти</a>
+      </nav>
+      {% endif %}
+    </header>
+
+    {% block content %}{% endblock %}
+  </body>
+</html>

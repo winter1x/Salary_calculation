@@ -180,12 +180,8 @@ class PayrollProcessor(BaseCSVLoader):
         scale = 1.0
         if total_desired > 0 and total_desired > budget_limit:
             scale = (budget_limit / total_desired)
-        print(scale, "scale")
-        print(total_desired, "total_desired")
 
         df["Повышение по лимиту"] = df["Сумма повышения"] * scale
-        print(df["Повышение по лимиту"].sum(), "Повышение по лимиту")
-        print(budget_limit, "Бюджет")
         calc_desired = budget_limit - df["Повышение по лимиту"].sum()
         df["Новый ФОТ (после лимита)"] = df["ФОТ"] + df["Повышение по лимиту"]
 
@@ -220,10 +216,17 @@ class PayrollProcessor(BaseCSVLoader):
             fig.savefig(self.output_dir / "raise_by_grade.png")
             plt.close(fig)
 
-    def process(self, budget_limit: float = 10_000_000) -> tuple[pd.DataFrame, pd.DataFrame, float]:
+    def process(
+        self,
+        budget_limit: float = 10_000_000,
+        write_outputs: bool = True,
+        plot: bool = True,
+    ) -> tuple[pd.DataFrame, pd.DataFrame, float]:
         sources = self.load_sources()
         merged, vacancies = self.merge_employees(sources)
         enriched, leftover = self.calculate_metrics(merged, budget_limit=budget_limit)
-        self.save_outputs(enriched, vacancies)
-        self.plot_raises(enriched)
+        if write_outputs:
+            self.save_outputs(enriched, vacancies)
+        if plot:
+            self.plot_raises(enriched)
         return enriched, vacancies, leftover

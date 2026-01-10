@@ -1,0 +1,96 @@
+{% extends "cabinet/base.html" %}
+
+{% block content %}
+  <h1>Кабинет бюджетолога</h1>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Рассчитать</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <p><strong>Всего сотрудников:</strong> {{ summary.total_employees }}</p>
+    <p><strong>Рекомендовано к повышению:</strong> {{ summary.recommended_count }}</p>
+    <p><strong>Сумма повышений:</strong> {{ summary.total_raise }}</p>
+    <p><strong>Остаток лимита:</strong> {{ summary.leftover }}</p>
+  </div>
+
+  <h2>Рекомендации (топ 20)</h2>
+  {% if recommended %}
+    <table>
+      <thead>
+        <tr>
+          <th>Таб. №</th>
+          <th>Ф.И.О.</th>
+          <th>Должность</th>
+          <th>ФОТ</th>
+          <th>ФОТ по рынку</th>
+          <th>Проплаченность</th>
+          <th>Повышение</th>
+          <th>МРФ</th>
+          <th>Грейд</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in recommended %}
+          <tr>
+            <td>{{ row.tab }}</td>
+            <td>{{ row.fio }}</td>
+            <td>{{ row.position }}</td>
+            <td>{{ row.fot }}</td>
+            <td>{{ row.fot_market }}</td>
+            <td>{{ row.paid_ratio }}</td>
+            <td>{{ row.raise_amount }}</td>
+            <td>{{ row.mrf }}</td>
+            <td>{{ row.grade }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Нет рекомендаций.</p>
+  {% endif %}
+
+  <h2>Повышения по МРФ (топ 10)</h2>
+  {% if by_mrf %}
+    <table>
+      <thead>
+        <tr>
+          <th>МРФ</th>
+          <th>Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_mrf %}
+          <tr>
+            <td>{{ item.0 }}</td>
+            <td>{{ item.1 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2>Повышения по грейдам (топ 10)</h2>
+  {% if by_grade %}
+    <table>
+      <thead>
+        <tr>
+          <th>Грейд</th>
+          <th>Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in by_grade %}
+          <tr>
+            <td>{{ item.0 }}</td>
+            <td>{{ item.1 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
