@@ -74,6 +74,13 @@
     </table>
   {% endif %}
 
+  {% if charts.mrf %}
+    <div class="card">
+      <h3>График по МРФ</h3>
+      <img src="{{ charts.mrf }}" alt="Raise by MRF" style="max-width: 100%;">
+    </div>
+  {% endif %}
+
   <h2>Повышения по грейдам (топ 10)</h2>
   {% if by_grade %}
     <table>
@@ -92,5 +99,12 @@
         {% endfor %}
       </tbody>
     </table>
+  {% endif %}
+
+  {% if charts.grade %}
+    <div class="card">
+      <h3>График по грейдам</h3>
+      <img src="{{ charts.grade }}" alt="Raise by Grade" style="max-width: 100%;">
+    </div>
   {% endif %}
 {% endblock %}

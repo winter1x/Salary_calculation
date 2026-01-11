@@ -2,7 +2,10 @@
 
 {% block content %}
   <h1>Вход</h1>
-  <p class="muted">Логин — табельный номер (Таб. №).</p>
+  <p class="muted">Вводите табельный номер (Таб. №). Пароль пока не требуется.</p>
+  {% if error %}
+    <p class="muted">{{ error }}</p>
+  {% endif %}
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}

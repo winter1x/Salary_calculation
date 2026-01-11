@@ -2,40 +2,54 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-import pandas as pd
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from payroll_processor import PayrollProcessor
 
-from .forms import BudgetForm
+from .data_access import load_employees_df
+from .forms import BudgetForm, TabLoginForm
 
 
 def _user_in_group(user, group_name: str) -> bool:
     return user.groups.filter(name=group_name).exists()
 
 
-def _load_employees_df() -> pd.DataFrame:
-    output_path = settings.OUTPUT_DIR / "employees_fot.csv"
-    if output_path.exists():
-        return pd.read_csv(output_path)
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("cabinet:dashboard")
 
-    processor = PayrollProcessor(settings.DATA_DIR, settings.OUTPUT_DIR)
-    employees, _, _ = processor.process()
-    return employees
+    form = TabLoginForm(request.POST or None)
+    error = None
+    if request.method == "POST" and form.is_valid():
+        tab_number = form.cleaned_data["tab_number"].strip()
+        user = authenticate(request, username=tab_number)
+        if user:
+            login(request, user, backend="cabinet.auth_backends.TabNumberBackend")
+            return redirect("cabinet:dashboard")
+        error = "Сотрудник с таким табельным номером не найден."
+
+    return render(request, "cabinet/login.html", {"form": form, "error": error})
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect("cabinet:login")
 
 
 @login_required
 def dashboard_redirect(request):
-    if _user_in_group(request.user, "budgetologist"):
+    if request.user.is_superuser or _user_in_group(request.user, "budgetologist"):
         return redirect("cabinet:budget")
     return redirect("cabinet:employee")
 
 
 @login_required
 def employee_dashboard(request):
-    df = _load_employees_df()
+    df = load_employees_df()
     tab_number = str(request.user.username).strip()
     row = df[df["Таб. №"].astype(str) == tab_number]
 
@@ -60,7 +74,7 @@ def employee_dashboard(request):
 
 @login_required
 def budget_dashboard(request):
-    if not _user_in_group(request.user, "budgetologist"):
+    if not (request.user.is_superuser or _user_in_group(request.user, "budgetologist")):
         return redirect("cabinet:employee")
 
     form = BudgetForm(request.POST or None)
@@ -69,7 +83,7 @@ def budget_dashboard(request):
         limit = form.cleaned_data["limit"]
 
     processor = PayrollProcessor(settings.DATA_DIR, settings.OUTPUT_DIR)
-    df, _, leftover = processor.process(budget_limit=float(limit), write_outputs=False, plot=False)
+    df, _, leftover = processor.process(budget_limit=float(limit), write_outputs=False, plot=True)
 
     recommended = df[df["Рекомендуется повышение"]].copy()
     recommended = recommended.sort_values("Повышение по лимиту", ascending=False).head(20)
@@ -103,6 +117,9 @@ def budget_dashboard(request):
             }
         )
 
+    chart_mrf = settings.OUTPUT_DIR / "raise_by_mrf.png"
+    chart_grade = settings.OUTPUT_DIR / "raise_by_grade.png"
+
     context = {
         "form": form,
         "summary": {
@@ -114,5 +131,9 @@ def budget_dashboard(request):
         "recommended": recommended_rows,
         "by_mrf": list(by_mrf.items()),
         "by_grade": list(by_grade.items()),
+        "charts": {
+            "mrf": settings.MEDIA_URL + chart_mrf.name if chart_mrf.exists() else None,
+            "grade": settings.MEDIA_URL + chart_grade.name if chart_grade.exists() else None,
+        },
     }
     return render(request, "cabinet/budget_dashboard.html", context)

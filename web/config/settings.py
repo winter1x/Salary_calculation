@@ -59,14 +59,15 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = []
 
+AUTHENTICATION_BACKENDS = [
+    "cabinet.auth_backends.TabNumberBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
-
-STATIC_URL = "static/"
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
@@ -74,3 +75,10 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 DATA_DIR = BASE_DIR / "data"
 OUTPUT_DIR = BASE_DIR / "output"
+
+STATIC_URL = "static/"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = OUTPUT_DIR
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
